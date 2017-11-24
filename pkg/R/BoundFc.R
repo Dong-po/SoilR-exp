@@ -1,24 +1,6 @@
 #
 # vim:set ff=unix expandtab ts=2 sw=2:
-correctnessOfBoundFc=function#check for unreasonable parameters or unsupported formats
-###  The atmospheric C14 data can be represented in more than one format 
-###  The function checks if the user required format is supported at the moment
-(object ##<< the object to be tested
-)
-{
-   res=TRUE
-   supported_formats=supported14CFractionFormats()
-   f=object@format
-#   print(paste("format=",f))
-   if (!any(grepl(f,supported_formats))){
-      err_str=cat("The required format:",f," describing the atmospheric c_14 fraction is not supported.\n 
-   	     The supported formats are: ",supported_formats,". \n",sep="")
-      stop(simpleError(err_str))
-      return(res)
-   }
-}
 
-#---------------------------------------------------------------------------------------------------------
 setClass(# Objects containing the atmospheric 14C fraction and the format it is provided in. 
     ### Objects of this class contain a time dependent function describing the Atmospheric 
     ### \eqn{^{14}C}{14C} fraction and a format description, 
@@ -41,7 +23,7 @@ setMethod(
 ){
     obj <- as(TimeMap(...),"BoundFc")
     obj@format=format
-    correctnessOfBoundFc(obj)
+    check(obj)
     return(obj)
 }
 )

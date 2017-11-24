@@ -41,42 +41,6 @@
 #   }
 #)
 
-correctnessOfModel14=function#check for unreasonable input parameters to Model constructor
-### The parameters used by the function \code{\link{GeneralModel_14}} in SoilR have a biological meaning, and therefore cannot be arbitrary.
-### This functions tests some of the obvious constraints of the general model. 
-### by calling \code{\link{correctnessOfModel}} and additionally takes care of the
-### following 
-(object ##<< the object to be tested
-)
-{
-# first check the Model14 specific issues
-supported_formats=c("Delta14C","AbsoluteFractionModern")
-atm_c14=object@c14Fraction
-if (class(atm_c14)!="BoundFc"){
-   stop(simpleError("The object describing the atmospheric c_14 fraction must be of class BoundFc containing information about the format in which the values are given"))
-}
-f=atm_c14@format
-if (!any(grepl(f,supported_formats))){
-   err_str=paste("The required format:",f," describing the atmospheric c_14 fraction is not supported.\n 
-	     The supported formats are: ",supported_formats,sep="")
-   stop(simpleError(err_str))
-}
-t_min=min(object@times)
-t_max=max(object@times)
-tA_min=getTimeRange(atm_c14)["t_min"]
-tA_max=getTimeRange(atm_c14)["t_max"]
-    if (t_min<tA_min) {
-        stop(simpleError("You ordered a timeinterval that starts earlier than the interval your atmospheric 14C fraction is defined for. \n Have look at the timeMap object or the data it is created from")
-        )
-    }
-    if (t_max>tA_max) {
-        stop(simpleError("You ordered a timeinterval that ends later than the interval your  your atmospheric 14C fraction is defined for. \n Have look at the timeMap object or the data it is created from")
-        )
-    }
-# now check the things common to all Model objects 
-res=correctnessOfModel(object)
-}
-
 #------------------------------------------------------------------------------------
 ### This class  extends \code{\linkS4class{Model}}, 
 ### to represent \eqn{^{14}C}{14C} decay. 
@@ -110,8 +74,7 @@ setClass(# Model_14
         c14Fraction="BoundFc",
         c14DecayRate="numeric",
         initialValF="ConstFc"
-    ) , 
-    validity=correctnessOfModel14 #set the validating function
+    ) 
     ##details<<
     ##    The original initial value problem for \eqn{\vec{C}}{(C_1,...,C_n)^t)} as decribed in the docomentation of the superclass \code{\linkS4class{Model}}
     ##    was given by:
@@ -159,6 +122,39 @@ setClass(# Model_14
     ##   The value for the \eqn{^{14}\mathbf{C}}{14C} fraction of the input \eqn{\mathbf{I}(t)}{I(t)} is also represented
     ##   as an object of a subclass of \code{\linkS4class{Fc}}. It can be time dependent or constant.
     ## }
+)
+#-------------------------------Constructors -----------------------------------------------------
+setMethod(
+    f="check",
+    signature=c("Model_14"),
+    definition=function#check for unreasonable input parameters 
+    ### The parameters used by the function \code{\link{GeneralModel_14}} in SoilR have a biological meaning, and therefore cannot be arbitrary.
+    ### This functions tests some of the obvious constraints of the general model. 
+    ### by calling \code{\link{check}} of its superclass and additionally takes care of the
+    ### following 
+    (object ##<< the object to be tested
+    )
+    {
+    # first check the Model14 specific issues
+    atm_c14=object@c14Fraction
+
+    t_min=min(object@times)
+    t_max=max(object@times)
+    tF_min=getTimeRange(atm_c14)["t_min"]
+    tF_max=getTimeRange(atm_c14)["t_max"]
+    print(tF_min)
+        if (t_min < tF_min){
+            stop(simpleError("You ordered a timeinterval that starts earlier than the interval your atmospheric 14C fraction is defined for. \n Have look at the timeMap object or the data it is created from")
+            )
+        }
+        if (t_max > tF_max){
+            stop(simpleError("You ordered a timeinterval that ends later than the interval your  your atmospheric 14C fraction is defined for. \n Have look at the timeMap object or the data it is created from")
+            )
+        }
+    # now check the things common to all Model objects 
+    # by coercing to the parentClass and calling the its check method
+    res <- check(as(object,'Model',strict=TRUE))
+    }
 )
 #-------------------------------Constructors -----------------------------------------------------
 setMethod(
@@ -221,7 +217,7 @@ setMethod(
             c14Fraction <- BoundFc(c14Fraction)
          }
         .Object@c14DecayRate=c14DecayRate
-        if (pass==FALSE) validObject(.Object) #call of the ispector if not explicitly disabled
+        if (pass==FALSE) check(.Object) #call of the ispector if not explicitly disabled
         return(.Object)
     }
 )

@@ -568,41 +568,11 @@ setGeneric(
 	     standardGeneric("BoundLinDecompOp")
 	 }
 )
-	 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+setGeneric(
+	 name="check",
+	 def=function # check correctness of objects 
+	 (object)
+	 {
+	     standardGeneric("check")
+	 }
+)

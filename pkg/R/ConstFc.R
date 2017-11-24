@@ -1,23 +1,5 @@
 #
 # vim:set ff=unix expandtab ts=2 sw=2:
-correctnessOfConstFc=function#check for unreasonable parameters or unsupported formats
-###  14C fraction data can be represented in more than one format 
-###  The function checks if the user required format is supported at the moment
-(object ##<< the object to be tested
-)
-{
-   res=TRUE
-   supported_formats=supported14CFractionFormats()
-   f=object@format
-#   print(paste("format=",f))
-   if (!any(grepl(f,supported_formats))){
-      err_str=cat("The required format:",f," describing the c_14 fraction is not supported.\n 
-   	     The supported formats are: ",supported_formats,". \n",sep="")
-      stop(simpleError(err_str))
-      return(res)
-   }
-}
-
 
 setClass(
    Class="ConstFc",
@@ -34,7 +16,7 @@ setMethod(
     #cat("-initializer at work-\n")
     .Object@values=values
     .Object@format=format
-    correctnessOfConstFc(.Object)
+    check(.Object)
     return(.Object)
     }
 )

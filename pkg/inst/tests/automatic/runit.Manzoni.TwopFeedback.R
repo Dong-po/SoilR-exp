@@ -1,4 +1,4 @@
-# This test function is automatically produced by the python script:/home/mm/SoilR/RPackages/SoilR/pkg/inst/tests/automatic/Rexample.py
+# This test function is automatically produced by the python script:/home/mm/SoilR-exp/pkg/inst/tests/automatic/Rexample.py
 test.TwopFeedback=function(){
    require(RUnit)
    c1=1
@@ -7,7 +7,7 @@ test.TwopFeedback=function(){
    k1=1/10
    k2=1/5
    f=1
-   t_start=0
+   t_start=0.0
    t_end=2
    tn=100
    tol=.02/tn
@@ -30,10 +30,10 @@ test.TwopFeedback=function(){
      )
    ))})
    Y=matrix(ncol=2,nrow=length(t))
-   Y[,1]=c1*(-4*(1/(-2*sqrt(7)/3 + 2/3) - 4/((-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)**2*(sqrt(7)/3 + 7/3)))*exp(t*(-3/20 - sqrt(7)/20))/(1 + sqrt(7)) + 4*exp(t*(-3/20 + sqrt(7)/20))/((-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)*(sqrt(7)/3 + 7/3))) + c2*(-16*exp(t*(-3/20 - sqrt(7)/20))/((1 + sqrt(7))*(-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)*(sqrt(7)/3 + 7/3)) - 4*exp(t*(-3/20 + sqrt(7)/20))/((-sqrt(7) + 1)*(sqrt(7)/3 + 7/3)))
-   Y[,2]=c1*((1/(-2*sqrt(7)/3 + 2/3) - 4/((-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)**2*(sqrt(7)/3 + 7/3)))*exp(t*(-3/20 - sqrt(7)/20)) - exp(t*(-3/20 + sqrt(7)/20))/((-2*sqrt(7)/3 + 2/3)*(sqrt(7)/3 + 7/3))) + c2*(4*exp(t*(-3/20 - sqrt(7)/20))/((-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)*(sqrt(7)/3 + 7/3)) + exp(t*(-3/20 + sqrt(7)/20))/(sqrt(7)/3 + 7/3))
+   Y[,1]=c1*(-3*sqrt(7)*t*exp(t*(-3/20 + sqrt(7)/20))/(140*(-t/10 - t*(-3/20 + sqrt(7)/20))) + 3*sqrt(7)*t*exp(t*(-3/20 - sqrt(7)/20))/(140*(-t/10 - t*(-3/20 - sqrt(7)/20)))) + c2*(-3*sqrt(7)*t**2*exp(t*(-3/20 + sqrt(7)/20))/(700*(-t/10 - t*(-3/20 - sqrt(7)/20))*(-t/10 - t*(-3/20 + sqrt(7)/20))) - 3*sqrt(7)*t*(-t/(5*(-t/10 - t*(-3/20 - sqrt(7)/20))) + 4*sqrt(7)/3)*exp(t*(-3/20 - sqrt(7)/20))/(140*(-t/10 - t*(-3/20 - sqrt(7)/20))))
+   Y[,2]=c1*(-3*sqrt(7)*exp(t*(-3/20 - sqrt(7)/20))/28 + 3*sqrt(7)*exp(t*(-3/20 + sqrt(7)/20))/28) + c2*(3*sqrt(7)*t*exp(t*(-3/20 + sqrt(7)/20))/(140*(-t/10 - t*(-3/20 - sqrt(7)/20))) + 3*sqrt(7)*(-t/(5*(-t/10 - t*(-3/20 - sqrt(7)/20))) + 4*sqrt(7)/3)*exp(t*(-3/20 - sqrt(7)/20))/28)
    R=matrix(ncol=2,nrow=length(t))
-   R[,1]=c1*(-4*(1/(-2*sqrt(7)/3 + 2/3) - 4/((-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)**2*(sqrt(7)/3 + 7/3)))*exp(t*(-3/20 - sqrt(7)/20))/(1 + sqrt(7)) + 4*exp(t*(-3/20 + sqrt(7)/20))/((-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)*(sqrt(7)/3 + 7/3)))/40 + c2*(-16*exp(t*(-3/20 - sqrt(7)/20))/((1 + sqrt(7))*(-sqrt(7) + 1)*(-2*sqrt(7)/3 + 2/3)*(sqrt(7)/3 + 7/3)) - 4*exp(t*(-3/20 + sqrt(7)/20))/((-sqrt(7) + 1)*(sqrt(7)/3 + 7/3)))/40
+   R[,1]=c1*(-3*sqrt(7)*t*exp(t*(-3/20 + sqrt(7)/20))/(140*(-t/10 - t*(-3/20 + sqrt(7)/20))) + 3*sqrt(7)*t*exp(t*(-3/20 - sqrt(7)/20))/(140*(-t/10 - t*(-3/20 - sqrt(7)/20))))/40 + c2*(-3*sqrt(7)*t**2*exp(t*(-3/20 + sqrt(7)/20))/(700*(-t/10 - t*(-3/20 - sqrt(7)/20))*(-t/10 - t*(-3/20 + sqrt(7)/20))) - 3*sqrt(7)*t*(-t/(5*(-t/10 - t*(-3/20 - sqrt(7)/20))) + 4*sqrt(7)/3)*exp(t*(-3/20 - sqrt(7)/20))/(140*(-t/10 - t*(-3/20 - sqrt(7)/20))))/40
    R[,2]=0
 meanTransitTime=(k1*(-r + 1) + k2)/(k1*k2*r)
    mod=GeneralModel(

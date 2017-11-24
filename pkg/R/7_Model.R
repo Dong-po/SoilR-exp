@@ -1,88 +1,13 @@
 #
 # vim:set ff=unix expandtab ts=2 sw=2:
-correctnessOfModel <- function #check for unreasonable input parameters
-### The parameters used by the function \code{\link{GeneralModel}} in SoilR have a biological meaning, and therefore cannot be arbitrary.
-### This functions tests some of the obvious constraints of the general model. 
-### Up to now these are:
-### 1) The compatibility of the decomposition rates and the transport parameters to and from other pools, i.e. 
-### the column-wise sum of the elements cannot be negative. Otherwise this would create negative values of respiration, which are not biologically meaningful.
-### 2) The compatibility of the time ranges of the supplied functions 
-
-(object)
-{   
-    times=object@times
-    Atm=object@mat
-    ivList=object@initialValues
-    InFluxes=object@inputFluxes
-    #first we check the dimensions
-    A=getFunctionDefinition(Atm)
-    na=nrow(A(0))
-    #compute the respiration coefficients as funtions of time
-    rcoeffs=RespirationCoefficients(A)
-    r=sapply(times,rcoeffs)
-    #mark the negative respirations (which will trigger the refusal of the matrix )
-    truthv=sapply(r,is.negative)
-    #find the bad columns 
-    positions=grep("TRUE",truthv)
-    res=TRUE
-    if (length(positions)>0){
-       stop(simpleError("The following columns contain unreasonable entries that lead to negative respirations for these pools. Please check your matrix as function of time."))
-        }
-     
-    tA_min=getTimeRange(Atm)["t_min"]
-    tA_max=getTimeRange(Atm)["t_max"]
-    tI_min=getTimeRange(InFluxes)["t_min"]
-    tI_max=getTimeRange(InFluxes)["t_max"]
-    t_min=min(times)
-    t_max=max(times)
-    haveALook="Have look at the object containing  A(t) or the data it is created from"
-    if (t_min<tA_min) {
-        stop(
-          simpleError(
-            paste(
-              "You ordered a timeinterval that starts earlier than the interval your matrix valued function A(t) is defined for. \n ",
-              haveALook
-            )
-          )
-        )
-    }
-    if (t_max>tA_max) {
-        stop(
-          simpleError(
-            paste(
-              "You ordered a timeinterval that ends later than the interval your matrix valued function A(t) is defined for. \n ",
-              haveALook
-            )
-          )
-        )
-    }
-    if (t_min<tI_min) {
-        stop(
-          simpleError(
-            paste(
-              "You ordered a timeinterval that starts earlier than the interval your function I(t) (InFluxes) is defined for. \n ",
-              haveALook
-            )
-          )
-        )
-    }
-    if (t_max>tI_max) {
-        stop(
-          simpleError(
-            paste(
-              "You ordered a timeinterval that ends later than the interval your function I(t) (InFluxes) is defined for. \n ",
-              haveALook
-            )
-          )
-        )
-    }
-
-    return(res)
-}
+#----------------------------------------------------------------------
 is.negative=function(number){
-   ### the function returns True if the argumente is negative
+   ### the function returns True if the argument is negative
    return(number<0)
 }
+
+
+
 ### The class Model is the focal point of SoilR. 
 ### \enumerate{
 ### \item It combines all the components that are needed to solve the
@@ -106,7 +31,7 @@ setClass(# Model
         ,
         solverfunc="function"
    ) , 
-   validity=correctnessOfModel #set the validating function
+
     ##details<<
     ## The initial value problem is given by:
     ## \itemize{
@@ -140,6 +65,91 @@ setClass(# Model
    ## inst/examples/ModelExamples.R CorrectNonautonomousLinearModelExplicit 
 )
 
+#------------------------------------------------------------------------------------
+setMethod(
+  f="check",
+  signature="Model",
+  def=function #check for unreasonable input parameters
+  ### The parameters used by the function \code{\link{GeneralModel}} in SoilR have a biological meaning, and therefore cannot be arbitrary.
+  ### This functions tests some of the obvious constraints of the general model. 
+  ### Up to now these are:
+  ### 1) The compatibility of the decomposition rates and the transport parameters to and from other pools, i.e. 
+  ### the column-wise sum of the elements cannot be negative. Otherwise this would create negative values of respiration, which are not biologically meaningful.
+  ### 2) The compatibility of the time ranges of the supplied functions 
+  
+  (object)
+  {   
+      times=object@times
+      Atm=object@mat
+      ivList=object@initialValues
+      InFluxes=object@inputFluxes
+      #first we check the dimensions
+      A=getFunctionDefinition(Atm)
+      na=nrow(A(0))
+      #compute the respiration coefficients as funtions of time
+      rcoeffs=RespirationCoefficients(A)
+      r=sapply(times,rcoeffs)
+      #mark the negative respirations (which will trigger the refusal of the matrix )
+      truthv=sapply(r,is.negative)
+      #find the bad columns 
+      positions=grep("TRUE",truthv)
+      res=TRUE
+      if (length(positions)>0){
+         stop(simpleError("The following columns contain unreasonable entries that lead to negative respirations for these pools. Please check your matrix as function of time."))
+          }
+       
+      tA_min=getTimeRange(Atm)["t_min"]
+      tA_max=getTimeRange(Atm)["t_max"]
+      tI_min=getTimeRange(InFluxes)["t_min"]
+      tI_max=getTimeRange(InFluxes)["t_max"]
+      t_min=min(times)
+      t_max=max(times)
+      haveALook="Have look at the object containing  A(t) or the data it is created from"
+      haveALook_I="Have look at the object desribing  I(t) or the data it is created from"
+      if (t_min<tA_min) {
+          stop(
+            simpleError(
+              paste(
+                sprintf("You ordered a timeinterval that starts earlier (t_min=%s) than the interval your matrix valued function A(t) is defined for (tA_max=%s. \n ",t_min,tA_min),
+                haveALook
+              )
+            )
+          )
+      }
+      if (t_max>tA_max) {
+          stop(
+            simpleError(
+              paste(
+                "You ordered a timeinterval that ends later than the interval your matrix valued function A(t) is defined for. \n ",
+                haveALook
+              )
+            )
+          )
+      }
+      if (t_min<tI_min) {
+          stop(
+            simpleError(
+              paste(
+                sprintf("You ordered a timeinterval that starts earlier (t_min=%s ) than the interval your function I(t) (InFluxes) is defined for (tI_min=%s). \n ",t_min,tI_min),
+                haveALook_I
+              )
+            )
+          )
+      }
+      if (t_max>tI_max) {
+          stop(
+            simpleError(
+              paste(
+                "You ordered a timeinterval that ends later than the interval your function I(t) (InFluxes) is defined for. \n ",
+                haveALook
+              )
+            )
+          )
+      }
+  
+      return(res)
+  }
+)
 
 #------------------------------------------------------------------------------------
 setMethod(
@@ -181,23 +191,13 @@ setMethod(
         ,
         pass=FALSE
         ){
-         if (class(mat)=="TimeMap"){
-          warning(TimeMapWarningOperators())
-            # cast
-            mat <- BoundLinDecompOp(mat)
-         }
         .Object@times=times
         .Object@mat=mat
         .Object@initialValues=initialValues
-         if (class(inputFluxes)=="TimeMap"){
-          warning(TimeMapWarningInFluxes())
-            # cast
-            inputFluxes<- BoundInFlux(inputFluxes)
-          }
         .Object@inputFluxes=inputFluxes
         .Object@solverfunc=solverfunc
         #if (pass==FALSE) validObject(.Object) #call of the ispector if not explicitly disabled
-        if (pass==FALSE) correctnessOfModel(.Object) #call of the ispector if not explicitly disabled
+        if (pass==FALSE) check(.Object) #call of the ispector if not explicitly disabled
         return(.Object)
         ### an Object of class Model
     }
