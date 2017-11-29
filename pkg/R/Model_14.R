@@ -41,6 +41,27 @@
 #   }
 #)
 
+correctnessOfModel14=function#check for unreasonable input parameters to constructor
+### The parameters used by the function \code{\link{GeneralModel_14}} in SoilR have a physical meaning, 
+### and can therefore not be arbitrary.
+### This functions tests some of the obvious constraints 14C specific issues.
+(object ##<< the object to be tested
+)
+{
+# check only the Model14 specific issues since initialize calls validObject which in turn calls the validity methods of the parent classes
+t_min=min(object@times)
+t_max=max(object@times)
+atm_c14 <- object@c14Fraction
+tA_min=getTimeRange(atm_c14)["t_min"]
+tA_max=getTimeRange(atm_c14)["t_max"]
+    if (t_min<tA_min) {
+        stop(simpleError(sprintf("You ordered a timeinterval that starts earlier (t_min=%s) than the interval your atmospheric 14C fraction is defined for (tA_min=%s). \n Have look at the object or the data it is created from",t_min,tA_min)))
+    }
+    if (t_max>tA_max) {
+        stop(simpleError(sprintf("You ordered a timeinterval that ends later (tmax=%s) than the interval your  your atmospheric 14C fraction is defined for (tA_max=%s). \n Have look at the object or the data it is created from",t_max,tA_max)))
+    }
+}
+
 #------------------------------------------------------------------------------------
 ### This class  extends \code{\linkS4class{Model}}, 
 ### to represent \eqn{^{14}C}{14C} decay. 
@@ -75,6 +96,8 @@ setClass(# Model_14
         c14DecayRate="numeric",
         initialValF="ConstFc"
     ) 
+    ,
+    validity=correctnessOfModel14
     ##details<<
     ##    The original initial value problem for \eqn{\vec{C}}{(C_1,...,C_n)^t)} as decribed in the docomentation of the superclass \code{\linkS4class{Model}}
     ##    was given by:
@@ -209,15 +232,9 @@ setMethod(
      ){
         .Object <- callNextMethod(.Object,times,mat,initialValues,inputFluxes,solverfunc,pass=pass)
         .Object@initialValF=initialValF
-
         .Object@c14Fraction=c14Fraction
-         if (class(mat)=="TimeMap"){
-          warning(TimeMapWarningBoundFc())
-            # cast
-            c14Fraction <- BoundFc(c14Fraction)
-         }
         .Object@c14DecayRate=c14DecayRate
-        if (pass==FALSE) check(.Object) #call of the ispector if not explicitly disabled
+        if (pass==FALSE) validObject(.Object) #call of the ispector if not explicitly disabled (This will automatically call the inspectors of the superclasses and also correctnessOfModel14 since this function is 
         return(.Object)
     }
 )
@@ -245,7 +262,7 @@ Model_14 <- function #general  constructor for class Model_14
      
      ##exampleFunctionsFromFiles<< 
      ## inst/tests/requireSoilR/runit.all.possible.Model.arguments.R test.all.possible.Model.arguments
-     ## #inst/examples/ModelExamples.R CorrectNonautonomousLinearModelExplicit 
+     ## inst/examples/ModelExamples.R CorrectNonautonomousLinearModelExplicit 
   }
 #------------------------------------------------------------------------------------
 setMethod(
@@ -258,7 +275,7 @@ setMethod(
       Atm=object@mat
       A=getFunctionDefinition(Atm)
       # add the C14 decay to the matrix which is done by a diagonal matrix which does not vary over time
-      # we assume a half life of th=5730 years
+      # as default we assume a half life of th=5730 years
       k=object@c14DecayRate
       m=diag(rep(k,ns),nrow=ns) # Need to specify the dimension of the matrix otherwise doesn't work for n=1.
       A_C14=function(t){
@@ -267,19 +284,19 @@ setMethod(
           return(newA)
       }
       #get the Inputrate TimeMap 
-      itm=object@inputFluxes
-      input=getFunctionDefinition(itm)
+      itm   <- object@inputFluxes
+      input <- getFunctionDefinition(itm)
       #get the C14 fraction 
-      Fctm=object@c14Fraction
-      F0=object@initialValF
+      Fctm  <- object@c14Fraction
+      F0    <- object@initialValF
       # To do the computations we have to convert the atmospheric C14 fraction into 
       # a format that ensures that no negative values occur because this is assumed
       # by the algorithms that will blow up the solution if this assumption is not 
       # justified.
       # To this end we convert everything else to the "Absolute Fraction Modern" format
       # that ensures positive values
-      Fctm=AbsoluteFractionModern(Fctm)
-      F0=AbsoluteFractionModern(F0)
+      Fctm  <- AbsoluteFractionModern(Fctm)
+      F0    <- AbsoluteFractionModern(F0)
       
       Fc=getFunctionDefinition(Fctm)
       input_C14=function(t){
@@ -291,8 +308,9 @@ setMethod(
       #in the following computation they describe the intial amount of C_14
       #To do so we multiply them with the value of Fc at the begin of the computation 
       inivals=getValues(F0)
-      inivalsFormat=getFormat(F0)
-      sVmat=matrix(inivals*object@initialValues,nrow=ns,ncol=1) # We use here the Hadarmard (entry-wise) product instead of matrix multiplication
+      
+      sVmat=matrix(inivals*object@initialValues,nrow=ns,ncol=1) # We use here the Hadarmard (entry-wise) product instead of matrix multiplication. It works for both 
+      # cases where F0 is a scalar of vector
       Y=solver(object@times,ydot,sVmat,object@solverfunc) 
       ### A matrix. Every column represents a pool and every row a point in time
       return(Y)

@@ -11,6 +11,7 @@ alltests <- defineTestSuite(
    #testFileRegexp = "runit.all.possible.GeneralInflux.arguments.R",
    #testFileRegexp = "runit.all.possible.Model.arguments.R",
    testFileRegexp = "runit.all.possible.Model_14.arguments.R",
+   #testFileRegexp = "runit.LowVerticalRatesPaper.R",
    testFuncRegexp = "^test.*",
    rngKind = "Marsaglia-Multicarry",
    rngNormalKind = "Kinderman-Ramage"

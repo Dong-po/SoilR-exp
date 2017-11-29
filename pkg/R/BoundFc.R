@@ -1,15 +1,11 @@
 #
 # vim:set ff=unix expandtab ts=2 sw=2:
-
 setClass(# Objects containing the atmospheric 14C fraction and the format it is provided in. 
     ### Objects of this class contain a time dependent function describing the Atmospheric 
     ### \eqn{^{14}C}{14C} fraction and a format description, 
     ### that allows to use the numeric valuest to be interpreted correctly in subsequent computations.
     Class="BoundFc",
-    contains=c("TimeMap","Fc"),
-    slots=list(
-      format="character" 
-   )
+    contains=c("TimeMap","Fc")
 )
 #------------------------ Constructors ---------------------------------
 setMethod(
@@ -23,21 +19,11 @@ setMethod(
 ){
     obj <- as(TimeMap(...),"BoundFc")
     obj@format=format
-    check(obj)
+    validObject(obj) # will recursively call validObject on the superclasses
     return(obj)
 }
 )
 
-setMethod(
-    f="getFormat",
-    signature="BoundFc",
-    definition=function# extract the format string
-    ### the function just yields the format as a string
-	  (object ##<< object  containing imformation about the format that could be Delta14C or AFM (Absolute Fraction Modern) for instance
-		){
-        return(object@format)
-    }
-)
 #---------------------------------------------------------------------------------------------------------
 setMethod(
    f= "Delta14C",
